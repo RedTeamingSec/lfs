@@ -195,9 +195,11 @@ PATH=/tools/bin:/bin:/usr/bin
 export LFS LC_ALL LFS_TGT PATH
 EOF
     
-    # Buat .bash_profile untuk user LFS
+    # Buat .bash_profile yang hanya memuat .bashrc
     cat > /home/"$LFS_USER"/.bash_profile << "EOF"
-exec env -i HOME=$HOME TERM=$TERM PS1='\u:\w\$ ' /bin/bash
+if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+fi
 EOF
     
     chown "$LFS_USER:$LFS_GROUP" /home/"$LFS_USER"/.{bashrc,bash_profile}
