@@ -139,40 +139,37 @@ function download_lfs_packages() {
     local wget_list="$LFS/sources/wget-list-8.4"
     local md5_list="$LFS/sources/md5sums-8.4"
     
-    # Daftar paket LFS 8.4
-    cat > "$wget_list" << "EOF"
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/aaa.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/binutils-2.30.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/gcc-7.3.0.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/glibc-2.27.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/libstdc++-7.3.0.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/linux-4.15.3.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/m4-1.4.18.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/ncurses-6.1.tar.gz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/bash-4.4.18.tar.gz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/bison-3.0.4.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/bzip2-1.0.6.tar.gz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/coreutils-8.29.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/diffutils-3.6.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/file-5.32.tar.gz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/findutils-4.6.0.tar.gz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/gawk-4.2.1.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/gettext-0.19.8.1.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/grep-3.1.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/gzip-1.9.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/make-4.2.1.tar.bz2
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/patch-2.7.6.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/perl-5.26.1.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/sed-4.4.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/tar-1.30.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/texinfo-6.5.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/util-linux-2.31.1.tar.xz
-http://ftp.lfs-matrix.net/pub/lfs/lfs-packages/8.4/xz-5.2.3.tar.xz
+    # Daftar paket LFS 8.4 dengan URL yang diperbaiki
+cat > "$wget_list" << "EOF"
+https://ftp.gnu.org/gnu/binutils/binutils-2.30.tar.xz
+https://ftp.gnu.org/gnu/gcc/gcc-7.3.0/gcc-7.3.0.tar.xz
+https://ftp.gnu.org/gnu/glibc/glibc-2.27.tar.xz
+https://ftp.gnu.org/gnu/gcc/gcc-7.3.0/libstdc++-7.3.0.tar.xz
+https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.15.3.tar.xz
+https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.xz
+https://ftp.gnu.org/gnu/ncurses/ncurses-6.1.tar.gz
+https://ftp.gnu.org/gnu/bash/bash-4.4.18.tar.gz
+https://ftp.gnu.org/gnu/bison/bison-3.0.4.tar.xz
+https://sourceware.org/pub/bzip2/bzip2-1.0.6.tar.gz
+https://ftp.gnu.org/gnu/coreutils/coreutils-8.29.tar.xz
+https://ftp.gnu.org/gnu/diffutils/diffutils-3.6.tar.xz
+https://astron.com/pub/file/file-5.32.tar.gz
+https://ftp.gnu.org/gnu/findutils/findutils-4.6.0.tar.gz
+https://ftp.gnu.org/gnu/gawk/gawk-4.2.1.tar.xz
+https://ftp.gnu.org/gnu/gettext/gettext-0.19.8.1.tar.xz
+https://ftp.gnu.org/gnu/grep/grep-3.1.tar.xz
+https://ftp.gnu.org/gnu/gzip/gzip-1.9.tar.xz
+https://ftp.gnu.org/gnu/make/make-4.2.1.tar.bz2
+https://ftp.gnu.org/gnu/patch/patch-2.7.6.tar.xz
+https://www.cpan.org/src/5.0/perl-5.26.1.tar.xz
+https://ftp.gnu.org/gnu/sed/sed-4.4.tar.xz
+https://ftp.gnu.org/gnu/tar/tar-1.30.tar.xz
+https://ftp.gnu.org/gnu/texinfo/texinfo-6.5.tar.xz
+https://www.kernel.org/pub/linux/utils/util-linux/v2.31/util-linux-2.31.1.tar.xz
+https://tukaani.org/xz/xz-5.2.3.tar.xz
 EOF
-
-    # MD5 checksums untuk LFS 8.4
-    cat > "$md5_list" << "EOF"
-d4a5b1d7a3e9e7b934dfc8754d4a31a4  aaa.tar.xz
+    # MD5 checksums untuk LFS 8.4 paket dengan URL yang diperbarui
+cat > "$md5_list" << "EOF"
 ffc476dd46c96f932f51f5df34a5b182  binutils-2.30.tar.xz
 df6bb6a4c5a7309ec5d0c1e40e5e8491  gcc-7.3.0.tar.xz
 3f45c167a6256b6687bfb7e25117f0a5  glibc-2.27.tar.xz
