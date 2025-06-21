@@ -19,6 +19,31 @@ MAKE_FLAGS="-j$(nproc)"        # Jumlah parallel jobs
 function su_cmd() {
     su --login "$LFS_USER" -c "bash -c '$1'"
 }
+function prepare_lfs_environment() {
+    echo -e "\n=== [5/12] Menyiapkan Lingkungan LFS ==="
+
+    # Buat .bashrc untuk user LFS
+    cat > /home/"$LFS_USER"/.bashrc << EOF
+set +h
+umask 022
+export LFS=/mnt/lfs
+export LC_ALL=POSIX
+export LFS_TGT=$LFS_TARGET
+export PATH=/tools/bin:/bin:/usr/bin
+EOF
+
+    # Buat .bash_profile yang hanya memuat .bashrc
+    cat > /home/"$LFS_USER"/.bash_profile << "EOF"
+if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+fi
+EOF
+
+    chown "$LFS_USER:$LFS_GROUP" /home/"$LFS_USER"/.{bashrc,bash_profile}
+
+    echo "Lingkungan LFS berhasil disiapkan untuk user $LFS_USER"
+}
+
 
 function build_temporary_tools() {
     echo -e "\n=== [6/12] Membangun Temporary Tools ==="
