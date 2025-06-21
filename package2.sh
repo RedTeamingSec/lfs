@@ -446,9 +446,6 @@ clear
 echo "=== Linux From Scratch (LFS) 8.4 Build Script untuk /dev/sdb3 ==="
 echo "=== Script ini akan membangun LFS 8.4 lengkap sampai bisa boot ==="
 
-check_root
-check_disk_space
-
 # Jalankan semua langkah secara berurutan
 build_temporary_tools
 build_coreutils_and_basic_system
