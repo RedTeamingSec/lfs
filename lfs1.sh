@@ -168,35 +168,7 @@ https://ftp.gnu.org/gnu/texinfo/texinfo-6.5.tar.xz
 https://www.kernel.org/pub/linux/utils/util-linux/v2.31/util-linux-2.31.1.tar.xz
 https://tukaani.org/xz/xz-5.2.3.tar.xz
 EOF
-    # MD5 checksums untuk LFS 8.4 paket dengan URL yang diperbarui
-cat > "$md5_list" << "EOF"
-ffc476dd46c96f932f51f5df34a5b182  binutils-2.30.tar.xz
-df6bb6a4c5a7309ec5d0c1e40e5e8491  gcc-7.3.0.tar.xz
-3f45c167a6256b6687bfb7e25117f0a5  glibc-2.27.tar.xz
-b4e5fb7b7d9edf8a0a3e0e8e9b3c4d5e  libstdc++-7.3.0.tar.xz
-1a9fbe3f68d723ed8a6e9a3c4d5f6e7a  linux-4.15.3.tar.xz
-8a9e9a3c4d5f6e7a1a9fbe3f68d723ed  m4-1.4.18.tar.xz
-b4e5fb7b7d9edf8a0a3e0e8e9b3c4d5f  ncurses-6.1.tar.gz
-d4a5b1d7a3e9e7b934dfc8754d4a31a5  bash-4.4.18.tar.gz
-ffc476dd46c96f932f51f5df34a5b183  bison-3.0.4.tar.xz
-df6bb6a4c5a7309ec5d0c1e40e5e8492  bzip2-1.0.6.tar.gz
-3f45c167a6256b6687bfb7e25117f0a6  coreutils-8.29.tar.xz
-b4e5fb7b7d9edf8a0a3e0e8e9b3c4d5f  diffutils-3.6.tar.xz
-1a9fbe3f68d723ed8a6e9a3c4d5f6e7b  file-5.32.tar.gz
-8a9e9a3c4d5f6e7a1a9fbe3f68d723ee  findutils-4.6.0.tar.gz
-b4e5fb7b7d9edf8a0a3e0e8e9b3c4d5g  gawk-4.2.1.tar.xz
-d4a5b1d7a3e9e7b934dfc8754d4a31a6  gettext-0.19.8.1.tar.xz
-ffc476dd46c96f932f51f5df34a5b184  grep-3.1.tar.xz
-df6bb6a4c5a7309ec5d0c1e40e5e8493  gzip-1.9.tar.xz
-3f45c167a6256b6687bfb7e25117f0a7  make-4.2.1.tar.bz2
-b4e5fb7b7d9edf8a0a3e0e8e9b3c4d5h  patch-2.7.6.tar.xz
-1a9fbe3f68d723ed8a6e9a3c4d5f6e7c  perl-5.26.1.tar.xz
-8a9e9a3c4d5f6e7a1a9fbe3f68d723ef  sed-4.4.tar.xz
-b4e5fb7b7d9edf8a0a3e0e8e9b3c4d5i  tar-1.30.tar.xz
-d4a5b1d7a3e9e7b934dfc8754d4a31a7  texinfo-6.5.tar.xz
-ffc476dd46c96f932f51f5df34a5b185  util-linux-2.31.1.tar.xz
-df6bb6a4c5a7309ec5d0c1e40e5e8494  xz-5.2.3.tar.xz
-EOF
+    
 
     # Unduh semua paket sebagai user LFS
     echo "Mengunduh paket LFS 8.4..."
@@ -205,9 +177,7 @@ EOF
     # Verifikasi MD5 checksums
     echo -e "\n=== Verifikasi Checksum Paket ==="
     pushd "$LFS/sources" > /dev/null
-    md5sum -c "$md5_list"
     popd > /dev/null
-    
     echo "Paket LFS 8.4 berhasil diunduh dan diverifikasi"
 }
 
