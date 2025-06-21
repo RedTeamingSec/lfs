@@ -16,12 +16,16 @@ MAKE_FLAGS="-j$(nproc)"        # Jumlah parallel jobs
 # ==============================================
 # Fungsi Utilitas
 # ==============================================
+function su_cmd() {
+    su --login "$LFS_USER" -c "bash -c '$1'"
+}
+
 function build_temporary_tools() {
     echo -e "\n=== [6/12] Membangun Temporary Tools ==="
     
     # Binutils Pass 1
     echo "Membangun Binutils (Pass 1)..."
-    su - "$LFS_USER" -c "cd $LFS/sources && \
+    su_cmd "cd $LFS/sources && \
         tar xf binutils-2.30.tar.xz && \
         cd binutils-2.30 && \
         mkdir -v build && \
@@ -37,7 +41,7 @@ function build_temporary_tools() {
     
     # GCC Pass 1
     echo "Membangun GCC (Pass 1)..."
-    su - "$LFS_USER" -c "cd $LFS/sources && \
+    su_cmd "cd $LFS/sources && \
         tar xf gcc-7.3.0.tar.xz && \
         cd gcc-7.3.0 && \
         tar xf ../mpfr-4.0.1.tar.xz && \
@@ -71,7 +75,7 @@ function build_temporary_tools() {
     
     # Linux API Headers
     echo "Menginstal Linux API Headers..."
-    su - "$LFS_USER" -c "cd $LFS/sources && \
+    su_cmd "cd $LFS/sources && \
         tar xf linux-4.15.3.tar.xz && \
         cd linux-4.15.3 && \
         make mrproper && \
@@ -80,7 +84,7 @@ function build_temporary_tools() {
     
     # Glibc
     echo "Membangun Glibc..."
-    su - "$LFS_USER" -c "cd $LFS/sources && \
+    su_cmd "cd $LFS/sources && \
         tar xf glibc-2.27.tar.xz && \
         cd glibc-2.27 && \
         mkdir -v build && \
@@ -97,7 +101,7 @@ function build_temporary_tools() {
     
     # Libstdc++ (GCC)
     echo "Membangun Libstdc++..."
-    su - "$LFS_USER" -c "cd $LFS/sources && \
+    su_cmd "cd $LFS/sources && \
         tar xf libstdc++-7.3.0.tar.xz && \
         cd libstdc++-7.3.0 && \
         mkdir -v build && \
@@ -120,7 +124,7 @@ function build_coreutils_and_basic_system() {
     
     # Binutils Pass 2
     echo "Membangun Binutils (Pass 2)..."
-    su - "$LFS_USER" -c "cd $LFS/sources && \
+    su_cmd "cd $LFS/sources && \
         tar xf binutils-2.30.tar.xz && \
         cd binutils-2.30 && \
         mkdir -v build && \
@@ -142,7 +146,7 @@ function build_coreutils_and_basic_system() {
     
     # GCC Pass 2
     echo "Membangun GCC (Pass 2)..."
-    su - "$LFS_USER" -c "cd $LFS/sources && \
+    su_cmd "cd $LFS/sources && \
         tar xf gcc-7.3.0.tar.xz && \
         cd gcc-7.3.0 && \
         cat gcc/limitx.h gcc/glimits.h gcc/limity.h > \
@@ -174,7 +178,7 @@ function build_coreutils_and_basic_system() {
     
     # Coreutils
     echo "Membangun Coreutils..."
-    su - "$LFS_USER" -c "cd $LFS/sources && \
+    su_cmd "cd $LFS/sources && \
         tar xf coreutils-8.29.tar.xz && \
         cd coreutils-8.29 && \
         ./configure --prefix=/tools --enable-install-program=hostname && \
@@ -184,7 +188,7 @@ function build_coreutils_and_basic_system() {
     # Build tools dasar lainnya (disederhanakan)
     for package in bash bison bzip2 diffutils file findutils gawk gettext grep gzip m4 make patch perl sed tar texinfo xz; do
         echo "Membangun $package..."
-        su - "$LFS_USER" -c "cd $LFS/sources && \
+        su_cmd "cd $LFS/sources && \
             tar xf ${package}-*.tar.* && \
             cd ${package}-* && \
             ./configure --prefix=/tools && \
