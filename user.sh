@@ -16,7 +16,7 @@ fi
 echo "🔧 Menambahkan .bashrc & .bash_profile untuk user 'lfs'..."
 
 # === .bashrc untuk user lfs ===
-sudo -u $LFS_USER bash -c 'cat > ~/.bashrc' << "EOF"
+cat > ~/.bashrc' << "EOF"
 # ~/.bashrc untuk user lfs (toolchain)
 export LFS=/mnt/lfs
 export LFS_TGT=$(uname -m)-lfs-linux-gnu
