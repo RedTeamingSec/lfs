@@ -1,39 +1,46 @@
 #!/bin/bash
-# Jalankan sebagai root untuk memperbaiki login user lfs
+# Jalankan sebagai root untuk memeriksa apakah login user lfs valid
 
 set -e
 
-echo "🔧 Memperbaiki .bash_profile dan .bashrc user lfs..."
+echo "🔎 Memeriksa integritas lingkungan login user lfs..."
 
-# Pastikan user lfs ada
-grep '^lfs:' /etc/passwd >/dev/null || {
-  echo "❌ User lfs tidak ditemukan. Buat dulu dengan 'useradd -m -s /bin/bash lfs'"
+LFS_HOME=/home/lfs
+PROFILE="$LFS_HOME/.bash_profile"
+BASHRC="$LFS_HOME/.bashrc"
+
+# Cek user
+if ! id lfs &>/dev/null; then
+  echo "❌ User 'lfs' belum ada. Gunakan: useradd -m -s /bin/bash lfs"
   exit 1
-}
+fi
 
-# Perbaiki .bash_profile
-cat > /home/lfs/.bash_profile << "EOF"
-exec env -i \
-  HOME=$HOME \
-  TERM=$TERM \
-  PS1='\u:\w\$ ' \
-  PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin \
-  /bin/bash --login
-EOF
+# Cek .bash_profile
+if ! grep -q "/bin/bash --login" "$PROFILE"; then
+  echo "⚠️  .bash_profile tidak memuat perintah shell login."
+else
+  echo "✅ .bash_profile terlihat benar."
+fi
 
-# Perbaiki .bashrc
-cat > /home/lfs/.bashrc << "EOF"
-set +h
-umask 022
-LFS=/mnt/lfs
-LC_ALL=POSIX
-LFS_TGT=$(uname -m)-lfs-linux-gnu
-PATH=$LFS/tools/bin:/bin:/usr/bin
-export LFS LC_ALL LFS_TGT PATH
-EOF
+# Cek PATH di .bashrc
+if ! grep -q "tools/bin" "$BASHRC"; then
+  echo "⚠️  .bashrc tidak menyertakan \$LFS/tools/bin dalam PATH."
+else
+  echo "✅ .bashrc menyertakan PATH tools."
+fi
 
-# Set permission yang benar
-chown lfs:lfs /home/lfs/.bash_profile /home/lfs/.bashrc
-chmod 644 /home/lfs/.bash_profile /home/lfs/.bashrc
+# Cek file penting
+for f in "$PROFILE" "$BASHRC"; do
+  if [ ! -f "$f" ]; then
+    echo "❌ File hilang: $f"
+  else
+    echo "✅ Ada: $f"
+  fi
+  ls -l "$f"
+done
 
-echo "✅ Berhasil memperbaiki shell login untuk user lfs. Coba: su - lfs"
+# Uji login manual (sembunyikan warning job control)
+echo "🧪 Uji login (non-interaktif)..."
+su - lfs -c 'echo "✅ Login ke user lfs berhasil. PATH=\$PATH"' 2>/dev/null || echo "❌ Gagal login sebagai lfs."
+
+echo "✔️  Pemeriksaan selesai. Jika tidak ada error, login user lfs aman digunakan."
