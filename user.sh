@@ -1,59 +1,64 @@
 #!/bin/bash
-set -euo pipefail
+set -e
 
-# === CONFIG ===
+# === VARIABEL DASAR ===
 LFS=/mnt/lfs
 LFS_USER=lfs
-LFS_GROUP=lfs
 LFS_HOME=/home/$LFS_USER
+CHROOT_ROOT=$LFS/root
 
-# === CEK ROOT ===
+# === CEK AKSES ROOT ===
 if [[ $EUID -ne 0 ]]; then
   echo "🛑 Script ini harus dijalankan sebagai root!"
   exit 1
 fi
 
-# === BUAT GRUP DAN USER ===
-if ! getent group $LFS_GROUP > /dev/null; then
-  groupadd $LFS_GROUP
-  echo "✅ Grup '$LFS_GROUP' dibuat."
-else
-  echo "✅ Grup '$LFS_GROUP' sudah ada."
-fi
+echo "🔧 Menambahkan .bashrc & .bash_profile untuk user 'lfs'..."
 
-if ! id $LFS_USER &>/dev/null; then
-  useradd -s /bin/bash -g $LFS_GROUP -m -k /dev/null $LFS_USER
-  echo "✅ User '$LFS_USER' dibuat."
-  passwd $LFS_USER
-else
-  echo "✅ User '$LFS_USER' sudah ada."
-fi
-
-# === PERMISSION DIREKTORI ===
-mkdir -pv $LFS/{sources,tools}
-chown -v $LFS_USER:$LFS_GROUP $LFS/{sources,tools}
-chmod -v a+wt $LFS/sources
-
-# === SET .bashrc UNTUK USER LFS ===
-su - $LFS_USER -c bash << 'EOF'
-cat > ~/.bashrc << 'EOM'
+# === .bashrc untuk user lfs ===
+sudo -u $LFS_USER bash -c 'cat > ~/.bashrc' << "EOF"
+# ~/.bashrc untuk user lfs (toolchain)
 export LFS=/mnt/lfs
 export LFS_TGT=$(uname -m)-lfs-linux-gnu
 export PATH=$LFS/tools/bin:$PATH
 export MAKEFLAGS="-j$(nproc)"
-EOM
 EOF
 
-# === SET .bash_profile UNTUK USER LFS ===
-su - $LFS_USER -c bash << 'EOF'
-cat > ~/.bash_profile << 'EOM'
+# === .bash_profile untuk user lfs ===
+sudo -u $LFS_USER bash -c 'cat > ~/.bash_profile' << "EOF"
+# ~/.bash_profile untuk user lfs (login shell)
 exec env -i HOME=$HOME TERM=$TERM PS1='\u:\w\$ ' \
   PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin \
   /bin/bash --login
-EOM
 EOF
 
-echo -e "\n🎉 Selesai: User 'lfs' siap dipakai.\n"
-echo "👉 Sekarang jalankan:"
-echo "   su - lfs"
-echo "   echo \$LFS      # Harus output: /mnt/lfs"
+echo "✅ .bashrc dan .bash_profile user 'lfs' sudah ditulis."
+
+# === Tambahkan .bashrc untuk root di dalam chroot ===
+echo "🔧 Menambahkan .bashrc untuk root chroot..."
+
+mkdir -p $CHROOT_ROOT
+
+cat > $CHROOT_ROOT/.bashrc << "EOF"
+# ~/.bashrc untuk root dalam chroot (LFS)
+set +h
+umask 022
+
+export LFS=/mnt/lfs
+export LC_ALL=POSIX
+export LFS_TGT=$(uname -m)-lfs-linux-gnu
+
+PATH=/usr/bin
+if [ ! -L /bin ]; then PATH=/bin:$PATH; fi
+PATH=/tools/bin:$PATH
+
+export PATH LC_ALL LFS LFS_TGT
+CONFIG_SITE=/usr/share/config.site
+export CONFIG_SITE
+EOF
+
+echo "✅ .bashrc root chroot ditambahkan di: $CHROOT_ROOT/.bashrc"
+
+echo -e "\n🎉 Selesai. Sekarang kamu bisa lanjut:"
+echo "👉 su - lfs"
+echo "👉 chroot $LFS /usr/bin/env -i HOME=/root ... /bin/bash --login"
