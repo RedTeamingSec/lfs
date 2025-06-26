@@ -25,11 +25,8 @@ export MAKEFLAGS="-j$(nproc)"
 EOF
 
 # === .bash_profile untuk user lfs ===
-sudo -u $LFS_USER bash -c 'cat > ~/.bash_profile' << "EOF"
-# ~/.bash_profile untuk user lfs (login shell)
-exec env -i HOME=$HOME TERM=$TERM PS1='\u:\w\$ ' \
-  PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin \
-  /bin/bash --login
+cat > ~/.bash_profile << "EOF"
+exec env -i HOME=$HOME TERM=$TERM PS1='\u:\w\$ ' /bin/bash
 EOF
 
 echo "✅ .bashrc dan .bash_profile user 'lfs' sudah ditulis."
