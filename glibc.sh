@@ -1,54 +1,119 @@
 #!/bin/bash
 set -e
 
-echo "==> [0] Menyiapkan .bash_profile dan .bashrc..."
+echo "📦 [LFS] Setup Environment dan Toolchain Lengkap"
 
-# ==========================
-# === .bash_profile Toolchain
-# ==========================
+# ====== 1. Siapkan ~/.bash_profile dan ~/.bashrc untuk user lfs ======
+echo "==> Menyiapkan .bash_profile dan .bashrc..."
+
 cat > ~/.bash_profile << "EOF"
 exec env -i HOME=$HOME TERM=$TERM PS1='\u:\w\$ ' /bin/bash
 EOF
 
-# ==========================
-# === .bashrc Toolchain
-# ==========================
 cat > ~/.bashrc << "EOF"
 set +h
 umask 022
 
 LFS=/mnt/lfs
 LFS_TGT=$(uname -m)-lfs-linux-gnu
-PATH=$LFS/tools/bin:/bin:/usr/bin
-MAKEFLAGS="-j$(nproc)"
 LC_ALL=POSIX
+MAKEFLAGS="-j$(nproc)"
+PATH=$LFS/tools/bin:/bin:/usr/bin
 
-export LFS LC_ALL LFS_TGT PATH MAKEFLAGS
+export LFS LFS_TGT LC_ALL MAKEFLAGS PATH
 EOF
 
-# Terapkan environment
 source ~/.bash_profile
 
-# Validasi variabel
+# ====== Validasi environment ======
 if [ -z "$LFS" ] || [ -z "$LFS_TGT" ]; then
-  echo "❌ Environment LFS belum aktif dengan benar!"
+  echo "❌ Environment \$LFS atau \$LFS_TGT tidak aktif!"
   exit 1
 fi
 
-# =====================
-# === GCC PASS 2    ===
-# =====================
-echo "==> [1/5] Building GCC Pass 2..."
+# ====== 2. GCC Pass 1 ======
+echo "==> [1/6] Building GCC Pass 1..."
 
 cd $LFS/sources
 rm -rf gcc-12.2.0
 tar -xf gcc-12.2.0.tar.xz
 cd gcc-12.2.0
 
-rm -f gcc/include/{limits.h,float.h}
-tar -xf ../mpfr-4.2.0.tar.xz && mv mpfr-4.2.0 mpfr
-tar -xf ../gmp-6.2.1.tar.xz && mv gmp-6.2.1 gmp
-tar -xf ../mpc-1.2.1.tar.gz && mv mpc-1.2.1 mpc
+tar -xf ../mpfr-4.2.0.tar.xz
+mv -v mpfr-4.2.0 mpfr
+tar -xf ../gmp-6.2.1.tar.xz
+mv -v gmp-6.2.1 gmp
+tar -xf ../mpc-1.2.1.tar.gz
+mv -v mpc-1.2.1 mpc
+
+sed -e '/m64=/s/lib64/lib/' -i.orig gcc/config/i386/t-linux64
+
+mkdir -v build
+cd build
+
+../configure --target=$LFS_TGT --prefix=$LFS/tools \
+  --with-glibc-version=2.36 \
+  --with-newlib \
+  --without-headers \
+  --enable-initfini-array \
+  --disable-nls \
+  --disable-shared \
+  --disable-multilib \
+  --disable-decimal-float \
+  --disable-threads \
+  --disable-libatomic \
+  --disable-libgomp \
+  --disable-libquadmath \
+  --disable-libssp \
+  --disable-libvtv \
+  --disable-libstdcxx \
+  --enable-languages=c
+
+make
+make install
+
+cd $LFS/sources
+rm -rf gcc-12.2.0
+
+# ====== 3. Binutils (Pass 2) ======
+echo "==> [2/6] Building Binutils Pass 2..."
+
+cd $LFS/sources
+rm -rf binutils-2.39
+tar -xf binutils-2.39.tar.xz
+cd binutils-2.39
+
+mkdir -v build
+cd build
+
+../configure --prefix=$LFS/tools \
+  --build=$(../config.guess) \
+  --host=$LFS_TGT \
+  --disable-nls \
+  --enable-shared \
+  --disable-werror \
+  --enable-64-bit-bfd
+
+make
+make install
+
+cd $LFS/sources
+rm -rf binutils-2.39
+
+# ====== 4. GCC Pass 2 ======
+echo "==> [3/6] Building GCC Pass 2..."
+
+cd $LFS/sources
+rm -rf gcc-12.2.0
+tar -xf gcc-12.2.0.tar.xz
+cd gcc-12.2.0
+
+tar -xf ../mpfr-4.2.0.tar.xz
+mv -v mpfr-4.2.0 mpfr
+tar -xf ../gmp-6.2.1.tar.xz
+mv -v gmp-6.2.1 gmp
+tar -xf ../mpc-1.2.1.tar.gz
+mv -v mpc-1.2.1 mpc
 
 mkdir -v build
 cd build
@@ -65,44 +130,35 @@ cd build
   --disable-bootstrap                              \
   --with-system-zlib
 
-make -j$(nproc)
+make
 make install
-
-echo "==> GCC Pass 2 selesai."
-
-# =====================
-# === libstdc++     ===
-# =====================
-echo "==> [2/5] Building libstdc++..."
 
 cd $LFS/sources
 rm -rf gcc-12.2.0
+
+# ====== 5. libstdc++ ======
+echo "==> [4/6] Building libstdc++..."
+
+cd $LFS/sources
 tar -xf gcc-12.2.0.tar.xz
 cd gcc-12.2.0/libstdc++-v3
 
 mkdir -v build
 cd build
 
-../configure                             \
-  --host=$LFS_TGT                        \
-  --prefix=$LFS/usr                      \
-  --disable-multilib                     \
-  --disable-nls                          \
-  --disable-libstdcxx-pch                \
+../configure --host=$LFS_TGT --prefix=$LFS/usr \
+  --disable-multilib --disable-nls \
+  --disable-libstdcxx-pch \
   --with-gxx-include-dir=/tools/$LFS_TGT/include/c++
 
-make -j$(nproc)
+make
 make install
 
 cd $LFS/sources
 rm -rf gcc-12.2.0
 
-echo "==> libstdc++ selesai."
-
-# =====================
-# === linux-headers ===
-# =====================
-echo "==> [3/5] Installing Linux API Headers..."
+# ====== 6. Linux API Headers ======
+echo "==> [5/6] Installing Linux Headers..."
 
 cd $LFS/sources
 rm -rf linux-5.19.2
@@ -117,12 +173,8 @@ cp -rv usr/include $LFS/usr
 cd $LFS/sources
 rm -rf linux-5.19.2
 
-echo "==> Linux headers selesai."
-
-# =====================
-# === glibc          ===
-# =====================
-echo "==> [4/5] Building glibc..."
+# ====== 7. Glibc ======
+echo "==> [6/6] Building Glibc..."
 
 cd $LFS/sources
 rm -rf glibc-2.36
@@ -130,28 +182,24 @@ tar -xf glibc-2.36.tar.xz
 cd glibc-2.36
 
 case $(uname -m) in
-  i?86)   ln -sfv ld-2.36.so $LFS/lib/ld-linux.so.2 ;;
+  i?86) ln -sfv ld-2.36.so $LFS/lib/ld-linux.so.2 ;;
   x86_64) ln -sfv ../lib/ld-2.36.so $LFS/lib64 ;;
 esac
 
 mkdir -v build
 cd build
 
-../configure                              \
-  --prefix=/usr                           \
-  --host=$LFS_TGT                         \
-  --build=$(../scripts/config.guess)     \
-  --enable-kernel=4.14                    \
-  --with-headers=$LFS/usr/include        \
+../configure --prefix=/usr --host=$LFS_TGT \
+  --build=$(../scripts/config.guess) \
+  --enable-kernel=4.14 \
+  --with-headers=$LFS/usr/include \
   libc_cv_slibdir=/usr/lib
 
-make -j$(nproc)
+make
 make DESTDIR=$LFS install
 
-echo "=> Menambahkan /etc/nsswitch.conf..."
 cat > $LFS/etc/nsswitch.conf << "EOF"
 # Begin /etc/nsswitch.conf
-
 passwd: files
 group: files
 shadow: files
@@ -163,38 +211,10 @@ protocols: files
 services: files
 ethers: files
 rpc: files
-
 # End /etc/nsswitch.conf
 EOF
 
-echo "==> glibc selesai."
-
-# =====================
-# === Binutils (bab 6)
-# =====================
-echo "==> [5/5] Building Binutils (Bab 6)..."
-
 cd $LFS/sources
-rm -rf binutils-2.39
-tar -xf binutils-2.39.tar.xz
-cd binutils-2.39
+rm -rf glibc-2.36
 
-mkdir -v build
-cd build
-
-../configure               \
-  --prefix=/usr            \
-  --build=$(../config.guess) \
-  --host=$LFS_TGT          \
-  --disable-nls            \
-  --enable-shared          \
-  --disable-werror         \
-  --enable-64-bit-bfd
-
-make -j$(nproc)
-make DESTDIR=$LFS install
-
-cd $LFS/sources
-rm -rf binutils-2.39
-
-echo "✅ Semua selesai: .bashrc, GCC Pass 2, libstdc++, linux-headers, glibc, dan binutils (Bab 6) telah dibangun!"
+echo -e "\n✅ Toolchain selesai: GCC Pass 1, Binutils, GCC Pass 2, libstdc++, Linux Headers, dan Glibc!"
