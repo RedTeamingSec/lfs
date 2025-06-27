@@ -1,5 +1,5 @@
 #!/bin/bash
-mkdir -pv $LFS/{etc,var} $LFS/usr/{bin,lib,sbin}
+mkdir -pv $LFS/{dev,proc,sys,run,srv,tmp,etc,var} $LFS/usr/{bin,lib,sbin}
 
 for i in bin lib sbin; do
   ln -sv usr/$i $LFS/$i
